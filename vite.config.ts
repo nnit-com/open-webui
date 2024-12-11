@@ -16,6 +16,9 @@ import { defineConfig } from 'vite';
 // };
 
 export default defineConfig({
+	// server:{
+	// 	port: 8698
+	// },
 	plugins: [sveltekit()],
 	define: {
 		APP_VERSION: JSON.stringify(process.env.npm_package_version),
