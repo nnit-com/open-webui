@@ -48,6 +48,7 @@ from open_webui.apps.retrieval.utils import (
     query_collection,
     query_collection_with_hybrid_search,
     query_doc,
+    # query_doc_by_str,
     query_doc_with_hybrid_search,
 )
 
@@ -158,7 +159,7 @@ app.state.config.CHUNK_SIZE = CHUNK_SIZE
 app.state.config.CHUNK_OVERLAP = CHUNK_OVERLAP
 
 app.state.config.RAG_EMBEDDING_ENGINE = RAG_EMBEDDING_ENGINE
-app.state.config.RAG_EMBEDDING_MODEL = RAG_EMBEDDING_MODEL
+app.state.config.RAG_EMBEDDING_MODEL = RAG_EMBEDDING_MODEL # "sentence-transformers/all-MiniLM-L6-v2"
 app.state.config.RAG_EMBEDDING_BATCH_SIZE = RAG_EMBEDDING_BATCH_SIZE
 app.state.config.RAG_RERANKING_MODEL = RAG_RERANKING_MODEL
 app.state.config.RAG_TEMPLATE = RAG_TEMPLATE
@@ -204,7 +205,7 @@ def update_embedding_model(
     embedding_model: str,
     auto_update: bool = False,
 ):
-    if embedding_model and app.state.config.RAG_EMBEDDING_ENGINE == "":
+    if embedding_model and app.state.config.RAG_EMBEDDING_ENGINE == "": # RAG_EMBEDDING_ENGINE = 'openai'
         from sentence_transformers import SentenceTransformer
 
         try:
@@ -217,7 +218,7 @@ def update_embedding_model(
             log.debug(f"Error loading SentenceTransformer: {e}")
             app.state.sentence_transformer_ef = None
     else:
-        app.state.sentence_transformer_ef = None
+        app.state.sentence_transformer_ef = None # sentence_transformer_ef = None
 
 
 def update_reranking_model(
@@ -255,7 +256,7 @@ def update_reranking_model(
 
 
 update_embedding_model(
-    app.state.config.RAG_EMBEDDING_MODEL,
+    app.state.config.RAG_EMBEDDING_MODEL, # RAG_EMBEDDING_MODEL='NNIT-Ada-3-large'
     RAG_EMBEDDING_MODEL_AUTO_UPDATE,
 )
 
@@ -794,6 +795,7 @@ def save_docs_to_vector_db(
             raise ValueError(ERROR_MESSAGES.DEFAULT("Invalid text splitter"))
 
         docs = text_splitter.split_documents(docs)
+        # log.info(f"=====docs sample: {docs}=====")
 
     if len(docs) == 0:
         raise ValueError(ERROR_MESSAGES.EMPTY_CONTENT)
@@ -869,6 +871,8 @@ def save_docs_to_vector_db(
             collection_name=collection_name,
             items=items,
         )
+        log.info(f"=====Vector Client=====\n{VECTOR_DB_CLIENT.get(collection_name)}")
+        # log.info(f"=====Vector Search=====\n{VECTOR_DB_CLIENT.search(collection_name, text = 'ceshi', limit=2)}")
 
         return True
     except Exception as e:

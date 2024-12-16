@@ -15,6 +15,7 @@ from open_webui.apps.retrieval.vector.connector import VECTOR_DB_CLIENT
 from open_webui.utils.misc import get_last_user_message
 
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.config import RAG_EMBEDDING_ENGINE
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -69,12 +70,32 @@ def query_doc(
             vectors=[query_embedding],
             limit=k,
         )
+        log.info(f"=====utile/query_doc/result:===== \n{result}")
 
-        log.info(f"query_doc:result {result.ids} {result.metadatas}")
+        # log.info(f"query_doc:result {result.ids} {result.metadatas}")
         return result
     except Exception as e:
         print(e)
         raise e
+
+# def query_doc(
+#     collection_name: str,
+#     query: str,
+#     k: int,
+# ):
+#     try:
+#         result = VECTOR_DB_CLIENT.search(
+#             collection_name=collection_name,
+#             text=query,
+#             limit=k,
+#         )
+        
+#         log.info(f"utile/query_doc/result {result}")
+#         # log.info(f"query_doc:result {result.ids} {result.metadatas}")
+#         return result
+#     except Exception as e:
+#         print(e)
+#         raise e
 
 
 def query_doc_with_hybrid_search(
@@ -182,6 +203,10 @@ def query_collection(
     results = []
     for query in queries:
         query_embedding = embedding_function(query)
+        # if RAG_EMBEDDING_ENGINE == 'openai':
+        query_embedding = query_embedding[0]
+        log.info(f"=====utils/query_collection/query_embedding:===== \n{type(query_embedding)}")
+        # log.info(f"=====utils/query_collection/query_embedding:===== \n{query_embedding}")
         for collection_name in collection_names:
             if collection_name:
                 try:
@@ -190,6 +215,8 @@ def query_collection(
                         k=k,
                         query_embedding=query_embedding,
                     )
+                    log.info(f"=====utils/query_collection/result:===== \n{result}")
+
                     if result is not None:
                         results.append(result.model_dump())
                 except Exception as e:
@@ -198,6 +225,32 @@ def query_collection(
                 pass
 
     return merge_and_sort_query_results(results, k=k)
+# def query_collection(
+#     collection_names: list[str],
+#     queries: list[str],
+#     embedding_function,
+#     k: int,
+# ) -> dict:
+#     results = []
+#     for query in queries:
+#         # query_embedding = embedding_function(query)
+#         for collection_name in collection_names:
+#             if collection_name:
+#                 try:
+#                     result = query_doc(
+#                         collection_name=collection_name,
+#                         k=k,
+#                         query=query,
+#                     )
+#                     log.info(f"=====utils/query_collection/result: {result}=====")
+#                     if result is not None:
+#                         results.append(result.model_dump())
+#                 except Exception as e:
+#                     log.exception(f"Error when querying the collection: {e}")
+#             else:
+#                 pass
+
+#     return merge_and_sort_query_results(results, k=k)
 
 
 def query_collection_with_hybrid_search(
@@ -254,6 +307,7 @@ def get_embedding_function(
             url=url,
             key=key,
         )
+        log.info(f"=====embedding_engine {embedding_engine}, embedding model {embedding_model}=====")
 
         def generate_multiple(query, func):
             if isinstance(query, list):
@@ -334,6 +388,7 @@ def get_sources_from_files(
                         context = query_collection(
                             collection_names=collection_names,
                             queries=queries,
+                            # embedding_function=embedding_function,
                             embedding_function=embedding_function,
                             k=k,
                         )
@@ -445,6 +500,7 @@ def generate_ollama_batch_embeddings(
 
         if "embeddings" in data:
             return data["embeddings"]
+            # return headers
         else:
             raise "Something went wrong :/"
     except Exception as e:
@@ -472,7 +528,8 @@ def generate_embeddings(engine: str, model: str, text: Union[str, list[str]], **
         else:
             embeddings = generate_openai_batch_embeddings(model, [text], url, key)
 
-        return embeddings[0] if isinstance(text, str) else embeddings
+        # return embeddings[0] if isinstance(text, str) else embeddings
+        return embeddings
 
 
 import operator

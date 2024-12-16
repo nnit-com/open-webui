@@ -16,13 +16,13 @@ from open_webui.constants import ERROR_MESSAGES
 ####################################
 
 OPEN_WEBUI_DIR = Path(__file__).parent  # the path containing this file
-print(OPEN_WEBUI_DIR)
+print(f"OPEN_WEBUI_DIR: {OPEN_WEBUI_DIR}")
 
 BACKEND_DIR = OPEN_WEBUI_DIR.parent  # the path containing this file
 BASE_DIR = BACKEND_DIR.parent  # the path containing the backend/
 
-print(BACKEND_DIR)
-print(BASE_DIR)
+print(f"BACKEND_DIR: {BACKEND_DIR}")
+print(f"BASE_DIR: {BASE_DIR}")
 
 try:
     from dotenv import find_dotenv, load_dotenv
@@ -100,8 +100,8 @@ log.setLevel(SRC_LOG_LEVELS["CONFIG"])
 
 
 WEBUI_NAME = os.environ.get("WEBUI_NAME", "Open WebUI")
-if WEBUI_NAME != "Open WebUI":
-    WEBUI_NAME += " (Open WebUI)"
+# if WEBUI_NAME != "Open WebUI":
+#     WEBUI_NAME += " (Open WebUI)"
 
 WEBUI_URL = os.environ.get("WEBUI_URL", "http://localhost:3000")
 
