@@ -1003,7 +1003,7 @@
 							</div>
 							<div class="flex items-end w-10">
 								{#if !history.currentId || history.messages[history.currentId]?.done == true}
-									{#if prompt === ''}
+									<!-- {#if prompt === ''}
 										<div class=" flex items-center mb-1">
 											<Tooltip content={$i18n.t('Call')}>
 												<button
@@ -1052,7 +1052,7 @@
 												</button>
 											</Tooltip>
 										</div>
-									{:else}
+									{:else} -->
 										<div class=" flex items-center mb-1">
 											<Tooltip content={$i18n.t('Send message')}>
 												<button
@@ -1078,7 +1078,7 @@
 												</button>
 											</Tooltip>
 										</div>
-									{/if}
+									<!-- {/if} -->
 								{:else}
 									<div class=" flex items-center mb-1.5">
 										<Tooltip content={$i18n.t('Stop')}>

@@ -65,7 +65,7 @@
 			align="start"
 			transition={flyAndScale}
 		>
-			{#if Object.keys(tools).length > 0}
+			<!-- {#if Object.keys(tools).length > 0}
 				<div class="  max-h-28 overflow-y-auto scrollbar-hidden">
 					{#each Object.keys(tools) as toolId}
 						<button
@@ -107,9 +107,9 @@
 				</div>
 
 				<hr class="border-black/5 dark:border-white/5 my-1" />
-			{/if}
+			{/if} -->
 
-			{#if $config?.features?.enable_web_search}
+			<!-- {#if $config?.features?.enable_web_search}
 				<button
 					class="flex w-full justify-between gap-2 items-center px-3 py-2 text-sm font-medium cursor-pointer rounded-xl"
 					on:click={() => {
@@ -125,7 +125,7 @@
 				</button>
 
 				<hr class="border-black/5 dark:border-white/5 my-1" />
-			{/if}
+			{/if} -->
 
 			<DropdownMenu.Item
 				class="flex gap-2 items-center px-3 py-2 text-sm  font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800  rounded-xl"

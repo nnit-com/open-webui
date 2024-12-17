@@ -1,6 +1,10 @@
 <script lang="ts">
+	
 	import { toast } from 'svelte-sonner';
 	import { v4 as uuidv4 } from 'uuid';
+	import { page } from '$app/stores';
+	import ChatMenu from './Sidebar/ChatMenu.svelte';
+	import { WEBUI_NAME, config, models as _models } from '$lib/stores';
 
 	import { goto } from '$app/navigation';
 	import {
@@ -8,6 +12,7 @@
 		chats,
 		settings,
 		showSettings,
+		userPreferences,
 		chatId,
 		tags,
 		showSidebar,
@@ -16,11 +21,20 @@
 		pinnedChats,
 		scrollPaginationEnabled,
 		currentChatPage,
-		temporaryChatEnabled
+		temporaryChatEnabled,
 	} from '$lib/stores';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
+	import {
+		createNewModel,
+		deleteModelById,
+		getModels as getWorkspaceModels,
+		toggleModelById,
+		updateModelById
+	} from '$lib/apis/models';
 
+	import { getModels } from '$lib/apis';
 	const i18n = getContext('i18n');
+	
 
 	import {
 		deleteChatById,
@@ -49,6 +63,7 @@
 	import Plus from '../icons/Plus.svelte';
 	import Tooltip from '../common/Tooltip.svelte';
 	import Folders from './Sidebar/Folders.svelte';
+	import { log_softmax } from '@huggingface/transformers';
 
 	const BREAKPOINT = 768;
 
@@ -56,17 +71,39 @@
 	let search = '';
 
 	let shiftKey = false;
-
 	let selectedChatId = null;
 	let showDropdown = false;
 	let showPinnedChat = true;
-
+    let showgptmodel = true;
 	// Pagination variables
 	let chatListLoading = false;
 	let allChatsLoaded = false;
+let models=[];
+let Allmodels=[];
+let KITNModels='';
+let selfModels='';
 
 	let folders = {};
+	// 存储过滤后的模型数据
+	let sidebarModels = [];
 
+	//响应式订阅模型数据
+	$: {
+		KITNModels = Allmodels.filter((model) => model.id=='kitn');
+		selfModels=Allmodels.filter((model) => model.id=='PersonalAssistant');
+		sidebarModels = Allmodels.filter(model => $userPreferences.sidebarMasks.includes(model.id));
+	}
+	const handleModelClick = (modelId) => {
+		console.log('modelid',modelId)
+		// 先跳转到 /GPTs/models 页面
+		goto('/GPTs/models');
+		
+		// 使用 setTimeout 延迟跳转到目标路由
+		setTimeout(() => {
+			// 在 /GPTs/models 页面跳转后，再跳转到目标路由
+			goto(`/g/?models=${encodeURIComponent(modelId)}`);
+		}, 100); // 设置适当的延迟（如100毫秒）
+	};
 	const initFolders = async () => {
 		const folderList = await getFolders(localStorage.token).catch((error) => {
 			toast.error(error);
@@ -101,6 +138,7 @@
 			}
 		}
 	};
+
 
 	const createFolder = async (name = 'Untitled') => {
 		if (name === '') {
@@ -211,7 +249,7 @@
 	const importChatHandler = async (items, pinned = false, folderId = null) => {
 		console.log('importChatHandler', items, pinned, folderId);
 		for (const item of items) {
-			console.log(item);
+			console.log("item:",item);
 			if (item.chat) {
 				await importChat(localStorage.token, item.chat, item?.meta ?? {}, pinned, folderId);
 			}
@@ -285,6 +323,7 @@
 
 	let touchstart;
 	let touchend;
+//角色模型在侧边栏的展示
 
 	function checkDirection() {
 		const screenWidth = window.innerWidth;
@@ -327,8 +366,35 @@
 		shiftKey = false;
 		selectedChatId = null;
 	};
+	let token = localStorage.token;  // 获取 token
 
+	
+	let selectedModelName = '';
+
+
+  const ModelHandler = (modelName) => {
+  goto(`/g/${encodeURIComponent(modelName)}`, { replaceState: false, force: true });
+};
 	onMount(async () => {
+		if (token) {
+      try {
+        // 获取工作区模型列表
+        // 更新 store 中的模型数据
+		await _models.set(await getModels(localStorage.token));
+        Allmodels =  await getModels(localStorage.token);
+		models = await getWorkspaceModels(localStorage.token);
+		console.log("Allmodels:",Allmodels)
+
+      } catch (error) {
+        console.error('Error fetching models:', error);
+      }
+    }
+	
+
+	const modelsValue = new URLSearchParams($page.url.search).get('models');
+    selectedModelName = modelsValue || '';
+    console.log('初始化模型:', selectedModelName);
+
 		showPinnedChat = localStorage?.showPinnedChat ? localStorage.showPinnedChat === 'true' : true;
 
 		mobile.subscribe((e) => {
@@ -362,6 +428,10 @@
 		dropZone?.addEventListener('dragover', onDragOver);
 		dropZone?.addEventListener('drop', onDrop);
 		dropZone?.addEventListener('dragleave', onDragLeave);
+
+		    // 读取已使用的模型信息
+
+
 	});
 
 	onDestroy(() => {
@@ -380,6 +450,7 @@
 		dropZone?.removeEventListener('drop', onDrop);
 		dropZone?.removeEventListener('dragleave', onDragLeave);
 	});
+
 </script>
 
 <ArchivedChatsModal
@@ -470,7 +541,7 @@
 			</button>
 		</div>
 
-		{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
+		{#if $user?.role === 'admin' }
 			<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
 				<a
 					class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
@@ -508,6 +579,163 @@
 				</a>
 			</div>
 		{/if}
+		<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+			<a
+				class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				href="/GPTs"
+				on:click={() => {
+					selectedChatId = null;
+					chatId.set('');
+
+					if ($mobile) {
+						showSidebar.set(false);
+					}
+				}}
+				draggable="false"
+			>
+				<div class="self-center">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="2"
+						stroke="currentColor"
+						class="size-[1.1rem]"
+					>
+					
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z"
+						/>
+					</svg>
+				</div>
+
+				<div class="flex self-center">
+					<div class=" self-center font-medium text-sm font-primary">{$i18n.t('GPTs')}</div>
+				</div>
+			</a>
+		</div>
+			{#if sidebarModels.length > 0}
+				{#each sidebarModels as model}
+				<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+					<a
+				class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				href="javascript:void(0);"  
+				on:click={() => handleModelClick(model.id)}  
+				>
+					<div class="self-center">
+						<button on:click={() => { selectedModelIdx = modelIdx; }}>
+							<img
+							crossorigin="anonymous"
+							src={model?.info?.meta?.profile_image_url ??
+								($i18n.language === 'dg-DG'
+								  ? `/doge.png`
+								  : `${WEBUI_BASE_URL}/static/favicon.png`)}
+							class="rounded-full border-[1px] border-gray-200 dark:border-none"
+							alt="logo"
+							draggable="false"
+							width="15" 
+							height="15"
+						  /> 
+						</button>
+					  </div>
+						<div class="flex self-center">
+							<div class=" self-center font-medium text-sm font-primary">{model.name}</div>
+						</div>
+					</a>
+				</div>
+				{/each}
+			{/if}
+		<!-- {#each gptsModels as model,modelIdx}	
+		<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+				<a
+					class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+					href={`/?models=${encodeURIComponent(model.id)}`}
+				>
+				<div class="self-center">
+					<button on:click={() => { selectedModelIdx = modelIdx; }}>
+						<img
+						crossorigin="anonymous"
+						src={model?.info?.meta?.profile_image_url ??
+							($i18n.language === 'dg-DG'
+							  ? `/doge.png`
+							  : `${WEBUI_BASE_URL}/static/favicon.png`)}
+						class="rounded-full border-[1px] border-gray-200 dark:border-none"
+						alt="logo"
+						draggable="false"
+						width="15" 
+						height="15"
+					  /> 
+					</button>
+				  </div>
+					<div class="flex self-center">
+						<div class=" self-center font-medium text-sm font-primary">{model.name}</div>
+					</div>
+				</a>
+			</div>
+			{/each} -->
+			<div class="divider">
+				<span class="divider-text">个人助手</span>
+			</div>
+			
+			<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+				
+				<a
+				class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				href="javascript:void(0);"  
+				on:click={() => handleModelClick(KITNModels[0]?.id)}  
+				>
+				<div class="self-center">
+					<button on:click={() => { selectedModelIdx = modelIdx; }}>
+						<img
+						crossorigin="anonymous"
+						src={KITNModels[0]?.info?.meta?.profile_image_url ??
+							($i18n.language === 'dg-DG'
+							  ? `/doge.png`
+							  : `${WEBUI_BASE_URL}/static/favicon.png`)}
+						class="rounded-full border-[1px] border-gray-200 dark:border-none"
+						alt="logo"
+						draggable="false"
+						width="15" 
+						height="15"
+					  /> 
+					</button>
+				  </div>
+					<div class="flex self-center">
+						<div class=" self-center font-medium text-sm font-primary">{KITNModels[0]?.name}</div>
+					</div>
+				</a>
+			</div>
+<!-- 个人助手 -->
+			<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+				
+				<a
+				class="flex-grow flex space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+				href="javascript:void(0);"  
+				on:click={() => handleModelClick(selfModels[0]?.id)}  
+				>
+				<div class="self-center">
+					<button on:click={() => { selectedModelIdx = modelIdx; }}>
+						<img
+						crossorigin="anonymous"
+						src={selfModels[0]?.info?.meta?.profile_image_url ??
+							($i18n.language === 'dg-DG'
+							  ? `/doge.png`
+							  : `${WEBUI_BASE_URL}/static/favicon.png`)}
+						class="rounded-full border-[1px] border-gray-200 dark:border-none"
+						alt="logo"
+						draggable="false"
+						width="15" 
+						height="15"
+					  /> 
+					</button>
+				  </div>
+					<div class="flex self-center">
+						<div class=" self-center font-medium text-sm font-primary">{selfModels[0]?.name}</div>
+					</div>
+				</a>
+			</div>
 
 		<div class="relative {$temporaryChatEnabled ? 'opacity-20' : ''}">
 			{#if $temporaryChatEnabled}
@@ -520,7 +748,7 @@
 				placeholder={$i18n.t('Search')}
 			/>
 
-			<div class="absolute z-40 right-3.5 top-1">
+			<!-- <div class="absolute z-40 right-3.5 top-1">
 				<Tooltip content={$i18n.t('New folder')}>
 					<button
 						class="p-1 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-gray-950 dark:hover:bg-gray-900 transition"
@@ -531,7 +759,7 @@
 						<Plus />
 					</button>
 				</Tooltip>
-			</div>
+			</div> -->
 		</div>
 
 		<div
@@ -564,10 +792,12 @@
 								});
 								if (!chat && item) {
 									chat = await importChat(localStorage.token, item.chat, item?.meta ?? {});
+									console.log("chat:",chat);
+
 								}
 
 								if (chat) {
-									console.log(chat);
+									console.log("chat:",chat);
 									if (chat.folder_id) {
 										const res = await updateChatFolderIdById(
 											localStorage.token,
@@ -692,6 +922,7 @@
 					<div class="pt-1.5">
 						{#if $chats}
 							{#each $chats as chat, idx}
+							
 								{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
 									<div
 										class="w-full pl-2.5 text-xs text-gray-500 dark:text-gray-500 font-medium {idx ===
@@ -720,8 +951,9 @@
 							-->
 									</div>
 								{/if}
-
+								
 								<ChatItem
+								
 									className=""
 									id={chat.id}
 									title={chat.title}
@@ -812,4 +1044,25 @@
 	.scrollbar-hidden::-webkit-scrollbar-thumb {
 		visibility: hidden;
 	}
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1px 0;
+    width: 100%;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #ddd;
+}
+
+.divider-text {
+    color: #888;
+    font-size: 10px;
+    padding: 0 2px;
+}
+
 </style>

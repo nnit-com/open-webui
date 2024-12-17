@@ -14,6 +14,8 @@
 	import Suggestions from './Suggestions.svelte';
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import EyeSlash from '$lib/components/icons/EyeSlash.svelte';
+	import MessageInputTools from './MessageInputTools.svelte';
+	import MessageInputSelf from './MessageInputSelf.svelte';
 	import MessageInput from './MessageInput.svelte';
 
 	const i18n = getContext('i18n');
@@ -187,26 +189,71 @@
 					? 'mt-2'
 					: ''}"
 			>
-				<MessageInput
-					{history}
-					{selectedModels}
-					bind:files
-					bind:prompt
-					bind:autoScroll
-					bind:selectedToolIds
-					bind:webSearchEnabled
-					bind:atSelectedModel
-					{transparentBackground}
-					{stopResponse}
-					{createMessagePair}
-					placeholder={$i18n.t('How can I help you today?')}
-					on:upload={(e) => {
-						dispatch('upload', e.detail);
-					}}
-					on:submit={(e) => {
-						dispatch('submit', e.detail);
-					}}
-				/>
+			{#if models[selectedModelIdx]?.id === "kitn"}
+	<MessageInputSelf
+		{history}
+		{selectedModels}
+		bind:files
+		bind:prompt
+		bind:autoScroll
+		bind:selectedToolIds
+		bind:webSearchEnabled
+		bind:atSelectedModel
+		{transparentBackground}
+		{stopResponse}
+		{createMessagePair}
+		placeholder={$i18n.t('How can I help you today?')}
+		on:upload={(e) => {
+			dispatch('upload', e.detail);
+		}}
+		on:submit={(e) => {
+			dispatch('submit', e.detail);
+		}}
+	/>
+{:else if models[selectedModelIdx]?.id === "PersonalAssistant"}
+	<MessageInput
+		{history}
+		{selectedModels}
+		bind:files
+		bind:prompt
+		bind:autoScroll
+		bind:selectedToolIds
+		bind:webSearchEnabled
+		bind:atSelectedModel
+		{transparentBackground}
+		{stopResponse}
+		{createMessagePair}
+		placeholder={$i18n.t('How can I help you today?')}
+		on:upload={(e) => {
+			dispatch('upload', e.detail);
+		}}
+		on:submit={(e) => {
+			dispatch('submit', e.detail);
+		}}
+	/>
+{:else}
+	<MessageInputTools
+		{history}
+		{selectedModels}
+		bind:files
+		bind:prompt
+		bind:autoScroll
+		bind:selectedToolIds
+		bind:webSearchEnabled
+		bind:atSelectedModel
+		{transparentBackground}
+		{stopResponse}
+		{createMessagePair}
+		placeholder={$i18n.t('How can I help you today?')}
+		on:upload={(e) => {
+			dispatch('upload', e.detail);
+		}}
+		on:submit={(e) => {
+			dispatch('submit', e.detail);
+		}}
+	/>
+{/if}
+
 			</div>
 		</div>
 	</div>
@@ -221,5 +268,13 @@
 				}}
 			/>
 		</div>
-	</div>
+	</div>	
+</div>
+<div class="fixed bottom-4 right-4">
+	<img
+		crossorigin="anonymous"
+		src="{WEBUI_BASE_URL}/static/favicon.png"
+		class="w-24 h-10"
+		alt="logo"
+	/>
 </div>

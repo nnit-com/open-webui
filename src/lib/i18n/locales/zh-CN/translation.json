@@ -239,6 +239,7 @@
 	"Description": "描述",
 	"Didn't fully follow instructions": "没有完全遵照指示",
 	"Disabled": "禁用",
+	"Disabled in Sidebar":"在侧边栏隐藏",
 	"Discover a function": "发现更多函数",
 	"Discover a model": "发现更多模型",
 	"Discover a prompt": "发现更多提示词",
@@ -304,6 +305,8 @@
 	"Enable Web Search": "启用联网搜索",
 	"Enable Web Search Query Generation": "启用生成联网搜索关键词",
 	"Enabled": "启用",
+	"Enabled in Sidebar":"放置在侧边栏",
+	
 	"Engine": "引擎",
 	"Ensure your CSV file includes 4 columns in this order: Name, Email, Password, Role.": "确保您的 CSV 文件按以下顺序包含 4 列： 姓名、电子邮箱、密码、角色。",
 	"Enter {{role}} message here": "在此处输入 {{role}} 的对话内容",

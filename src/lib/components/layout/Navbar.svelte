@@ -36,7 +36,7 @@
 
 	export let chat;
 	export let selectedModels;
-	export let showModelSelector = true;
+	export let showModelSelector = false;
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
@@ -96,6 +96,7 @@
 						<button
 							class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 							id="chat-context-menu-button"
+
 						>
 							<div class=" m-auto self-center">
 								<svg
@@ -117,7 +118,7 @@
 					</Menu>
 				{/if}
 
-				{#if !$mobile}
+				{#if !$mobile && $user?.role === 'admin' }
 					<Tooltip content={$i18n.t('Controls')}>
 						<button
 							class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"

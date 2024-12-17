@@ -206,6 +206,7 @@
 </svelte:head>
 
 {#if loaded}
+
 	<slot />
 {/if}
 
