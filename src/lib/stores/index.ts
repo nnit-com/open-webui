@@ -1,8 +1,11 @@
+
 import { APP_NAME } from '$lib/constants';
 import { type Writable, writable } from 'svelte/store';
 import type { GlobalModelConfig, ModelConfig } from '$lib/apis';
 import type { Banner } from '$lib/types';
 import type { Socket } from 'socket.io-client';
+
+
 
 // Backend
 export const WEBUI_NAME = writable(APP_NAME);
@@ -10,6 +13,18 @@ export const config: Writable<Config | undefined> = writable(undefined);
 export const user: Writable<SessionUser | undefined> = writable(undefined);
 
 // Frontend
+
+// 从 localStorage 中加载用户偏好（如果有）
+const savedSidebarMasks = JSON.parse(localStorage.getItem('sidebarMasks')) || [];
+
+export const userPreferences = writable({
+	sidebarMasks: savedSidebarMasks,
+});
+
+// 监听 userPreferences 的变化并同步到 localStorage
+userPreferences.subscribe((prefs) => {
+	localStorage.setItem('sidebarMasks', JSON.stringify(prefs.sidebarMasks));
+});
 export const MODEL_DOWNLOAD_POOL = writable({});
 
 export const mobile = writable(false);
@@ -51,7 +66,6 @@ export const showCallOverlay = writable(false);
 export const temporaryChatEnabled = writable(false);
 export const scrollPaginationEnabled = writable(false);
 export const currentChatPage = writable(1);
-
 export type Model = OpenAIModel | OllamaModel;
 
 type BaseModel = {

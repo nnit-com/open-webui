@@ -3,6 +3,7 @@
 
 	import { toast } from 'svelte-sonner';
 	import Sortable from 'sortablejs';
+	import { WEBUI_VERSION , WEBUI_BASE_URL} from '$lib/constants';
 
 	import fileSaver from 'file-saver';
 	const { saveAs } = fileSaver;
@@ -49,7 +50,9 @@
 
 	$: if (models) {
 		filteredModels = models.filter(
-			(m) => searchValue === '' || m.name.toLowerCase().includes(searchValue.toLowerCase())
+			(m) => 
+			m.id !== 'kitn' &&
+			(searchValue === '' || m.name.toLowerCase().includes(searchValue.toLowerCase()))
 		);
 	}
 
@@ -253,7 +256,7 @@
 
 					<a
 						class=" flex flex-1 cursor-pointer w-full"
-						href={`/?models=${encodeURIComponent(model.id)}`}
+						href={`/g/?models=${encodeURIComponent(model.id)}`}
 					>
 						<div class=" flex-1 self-center {model.is_active ? '' : 'text-gray-500'}">
 							<Tooltip
@@ -471,7 +474,7 @@
 		</div>
 	{/if}
 
-	{#if $config?.features.enable_community_sharing}
+	{#if !$config?.features.enable_community_sharing}
 		<div class=" my-16">
 			<div class=" text-xl font-medium mb-1 line-clamp-1">
 				{$i18n.t('Made by OpenWebUI Community')}
@@ -502,3 +505,11 @@
 		<Spinner />
 	</div>
 {/if}
+<div class="fixed bottom-4 right-4">
+	<img
+		crossorigin="anonymous"
+		src="{WEBUI_BASE_URL}/static/favicon.png"
+		class="w-24 h-10"
+		alt="logo"
+	/>
+</div>

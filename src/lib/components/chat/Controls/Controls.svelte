@@ -60,7 +60,7 @@
 
 			<hr class="my-2 border-gray-50 dark:border-gray-700/10" />
 		{/if}
-
+		<!-- {#if $user?.role === 'admin' } -->
 		<Collapsible bind:open={showValves} title={$i18n.t('Valves')} buttonClassName="w-full">
 			<div class="text-sm" slot="content">
 				<Valves show={showValves} />
@@ -81,7 +81,7 @@
 		</Collapsible>
 
 		<hr class="my-2 border-gray-50 dark:border-gray-700/10" />
-
+		{#if $user?.role === 'admin' }
 		<Collapsible title={$i18n.t('Advanced Params')} open={true} buttonClassName="w-full">
 			<div class="text-sm mt-1.5" slot="content">
 				<div>
@@ -89,5 +89,7 @@
 				</div>
 			</div>
 		</Collapsible>
+		{/if}
 	</div>
+	
 </div>
