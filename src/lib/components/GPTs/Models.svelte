@@ -16,13 +16,13 @@
 	import {
 		createNewModel,
 		deleteModelById,
-		getGPTsModels as getWorkspaceModels,
+		getModels as getWorkspaceModels,
 		toggleModelById,
 		updateModelById,
 		showModelInSidebarById
 	} from '$lib/apis/models';
 
-	import { getGPTsModels } from '$lib/apis';
+	import { getModels } from '$lib/apis';
 
 	import EllipsisHorizontal from '../icons/EllipsisHorizontal.svelte';
 	import ModelMenu from './Models/ModelMenu.svelte';
@@ -77,7 +77,7 @@
 			toast.success($i18n.t(`Deleted {{name}}`, { name: model.id }));
 		}
 
-		await _models.set(await getGPTsModels(localStorage.token));
+		await _models.set(await getModels(localStorage.token));
 		models = await getWorkspaceModels(localStorage.token);
 	};
 
@@ -174,9 +174,9 @@
 			);
 		}
 
-		await _models.set(await getGPTsModels(localStorage.token));
+		await _models.set(await getModels(localStorage.token));
 		models = await getWorkspaceModels(localStorage.token);
-		mask = await getGPTsModels(localStorage.token);
+		mask = await getModels(localStorage.token);
 		console.log("mask",mask)
 	};
 
@@ -477,7 +477,7 @@
 								}
 							}
 
-							await _models.set(await getGPTsModels(localStorage.token));
+							await _models.set(await getModels(localStorage.token));
 							models = await getWorkspaceModels(localStorage.token);
 						};
 

@@ -1,51 +1,51 @@
 import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
-export const getGPTsModels = async (token: string = '', base: boolean = false) => {
-	let error = null;
-	const res = await fetch(`${WEBUI_BASE_URL}/api/gpts${base ? '/base' : ''}`, {
-		method: 'GET',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			...(token && { authorization: `Bearer ${token}` })
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.catch((err) => {
-			error = err;
-			console.log(err);
-			return null;
-		});
+// export const getGPTsModels = async (token: string = '', base: boolean = false) => {
+// 	let error = null;
+// 	const res = await fetch(`${WEBUI_BASE_URL}/api/gpts${base ? '/base' : ''}`, {
+// 		method: 'GET',
+// 		headers: {
+// 			Accept: 'application/json',
+// 			'Content-Type': 'application/json',
+// 			...(token && { authorization: `Bearer ${token}` })
+// 		}
+// 	})
+// 		.then(async (res) => {
+// 			if (!res.ok) throw await res.json();
+// 			return res.json();
+// 		})
+// 		.catch((err) => {
+// 			error = err;
+// 			console.log(err);
+// 			return null;
+// 		});
 
-	if (error) {
-		throw error;
-	}
+// 	if (error) {
+// 		throw error;
+// 	}
 
-	let models = res?.data ?? [];
-	models = models
-		.filter((models) => models)
-		// Sort the models
-		.sort((a, b) => {
-			// Compare case-insensitively by name for models without position property
-			const lowerA = a.name.toLowerCase();
-			const lowerB = b.name.toLowerCase();
+// 	let models = res?.data ?? [];
+// 	models = models
+// 		.filter((models) => models)
+// 		// Sort the models
+// 		.sort((a, b) => {
+// 			// Compare case-insensitively by name for models without position property
+// 			const lowerA = a.name.toLowerCase();
+// 			const lowerB = b.name.toLowerCase();
 
-			if (lowerA < lowerB) return -1;
-			if (lowerA > lowerB) return 1;
+// 			if (lowerA < lowerB) return -1;
+// 			if (lowerA > lowerB) return 1;
 
-			// If same case-insensitively, sort by original strings,
-			// lowercase will come before uppercase due to ASCII values
-			if (a.name < b.name) return -1;
-			if (a.name > b.name) return 1;
+// 			// If same case-insensitively, sort by original strings,
+// 			// lowercase will come before uppercase due to ASCII values
+// 			if (a.name < b.name) return -1;
+// 			if (a.name > b.name) return 1;
 
-			return 0; // They are equal
-		});
+// 			return 0; // They are equal
+// 		});
 
-	console.log(models);
-	return models;
-};
+// 	console.log(models);
+// 	return models;
+// };
 
 export const getModels = async (token: string = '', base: boolean = false) => {
 	let error = null;
