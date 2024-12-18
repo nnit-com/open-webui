@@ -70,32 +70,14 @@ def query_doc(
             vectors=[query_embedding],
             limit=k,
         )
-        log.info(f"=====utile/query_doc/result:===== \n{result}")
+        # log.info(f"=====utile/query_doc/result:===== \n{result}")
 
-        # log.info(f"query_doc:result {result.ids} {result.metadatas}")
+        log.info(f"query_doc:result {result.ids} {result.metadatas}")
         return result
     except Exception as e:
         print(e)
         raise e
 
-# def query_doc(
-#     collection_name: str,
-#     query: str,
-#     k: int,
-# ):
-#     try:
-#         result = VECTOR_DB_CLIENT.search(
-#             collection_name=collection_name,
-#             text=query,
-#             limit=k,
-#         )
-        
-#         log.info(f"utile/query_doc/result {result}")
-#         # log.info(f"query_doc:result {result.ids} {result.metadatas}")
-#         return result
-#     except Exception as e:
-#         print(e)
-#         raise e
 
 
 def query_doc_with_hybrid_search(
@@ -205,7 +187,7 @@ def query_collection(
         query_embedding = embedding_function(query)
         # if RAG_EMBEDDING_ENGINE == 'openai':
         query_embedding = query_embedding[0]
-        log.info(f"=====utils/query_collection/query_embedding:===== \n{type(query_embedding)}")
+        # log.info(f"=====utils/query_collection/query_embedding:===== \n{type(query_embedding)}")
         # log.info(f"=====utils/query_collection/query_embedding:===== \n{query_embedding}")
         for collection_name in collection_names:
             if collection_name:
@@ -215,7 +197,7 @@ def query_collection(
                         k=k,
                         query_embedding=query_embedding,
                     )
-                    log.info(f"=====utils/query_collection/result:===== \n{result}")
+                    # log.info(f"=====utils/query_collection/result:===== \n{result}")
 
                     if result is not None:
                         results.append(result.model_dump())
@@ -225,32 +207,6 @@ def query_collection(
                 pass
 
     return merge_and_sort_query_results(results, k=k)
-# def query_collection(
-#     collection_names: list[str],
-#     queries: list[str],
-#     embedding_function,
-#     k: int,
-# ) -> dict:
-#     results = []
-#     for query in queries:
-#         # query_embedding = embedding_function(query)
-#         for collection_name in collection_names:
-#             if collection_name:
-#                 try:
-#                     result = query_doc(
-#                         collection_name=collection_name,
-#                         k=k,
-#                         query=query,
-#                     )
-#                     log.info(f"=====utils/query_collection/result: {result}=====")
-#                     if result is not None:
-#                         results.append(result.model_dump())
-#                 except Exception as e:
-#                     log.exception(f"Error when querying the collection: {e}")
-#             else:
-#                 pass
-
-#     return merge_and_sort_query_results(results, k=k)
 
 
 def query_collection_with_hybrid_search(

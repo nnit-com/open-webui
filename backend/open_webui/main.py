@@ -1207,8 +1207,9 @@ async def get_all_models():
 
 @app.get("/api/models")
 async def get_models(user=Depends(get_verified_user)):
+# async def get_models():
     models = await get_all_models()
-
+    # log.info(f"=====models: =====\n{models}")
     # Filter out filter pipelines
     models = [
         model
@@ -1226,26 +1227,27 @@ async def get_models(user=Depends(get_verified_user)):
 
     # Filter out models that the user does not have access to
     # if user.role == "user":
-    #     filtered_models = []
-    #     for model in models:
-    #         if model.get("arena"):
-    #             if has_access(
-    #                 user.id,
-    #                 type="read",
-    #                 access_control=model.get("info", {})
-    #                 .get("meta", {})
-    #                 .get("access_control", {}),
-    #             ):
-    #                 filtered_models.append(model)
-    #             continue
+    if True :
+        filtered_models = []
+        for model in models:
+            if model.get("arena"):
+                if has_access(
+                    user.id,
+                    type="read",
+                    access_control=model.get("info", {})
+                    .get("meta", {})
+                    .get("access_control", {}),
+                ):
+                    filtered_models.append(model)
+                continue
 
-    #         model_info = Models.get_model_by_id(model["id"])
-    #         if model_info:
-    #             if user.id == model_info.user_id or has_access(
-    #                 user.id, type="read", access_control=model_info.access_control
-    #             ):
-    #                 filtered_models.append(model)
-    #     models = filtered_models
+            model_info = Models.get_model_by_id(model["id"])
+            if model_info:
+                if user.id == model_info.user_id or has_access(
+                    user.id, type="read", access_control=model_info.access_control
+                ):
+                    filtered_models.append(model)
+        models = filtered_models
 
     log.debug(
         f"/api/models returned filtered models accessible to the user: {json.dumps([model['id'] for model in models])}"
@@ -1272,34 +1274,13 @@ async def get_gpts(user=Depends(get_verified_user)):
             key=lambda x: (model_order_dict.get(x["id"], float("inf")), x["name"])
         )
 
-    # # Filter out models that the user does not have access to
-    # if user.role == "user" and not BYPASS_MODEL_ACCESS_CONTROL:
-    #     filtered_models = []
-    #     for model in models:
-    #         if model.get("arena"):
-    #             if has_access(
-    #                 user.id,
-    #                 type="read",
-    #                 access_control=model.get("info", {})
-    #                 .get("meta", {})
-    #                 .get("access_control", {}),
-    #             ):
-    #                 filtered_models.append(model)
-    #             continue
-
-    #         model_info = Models.get_model_by_id(model["id"])
-    #         if model_info:
-    #             if user.id == model_info.user_id or has_access(
-    #                 user.id, type="read", access_control=model_info.access_control
-    #             ):
-    #                 filtered_models.append(model)
-    #     models = filtered_models
 
     log.debug(
         f"/api/models returned filtered models accessible to the user: {json.dumps([model['id'] for model in models])}"
     )
 
-    return {"data": models}
+    # return {"data": models}
+    return JSONResponse(models)
 
 @app.get("/api/models/base")
 async def get_base_models(user=Depends(get_admin_user)):

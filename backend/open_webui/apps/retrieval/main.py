@@ -23,6 +23,7 @@ from open_webui.apps.retrieval.vector.connector import VECTOR_DB_CLIENT
 
 # Document loaders
 from open_webui.apps.retrieval.loaders.main import Loader
+from open_webui.apps.retrieval.loaders.pdf_processor import PDFProcessor
 from open_webui.apps.retrieval.loaders.youtube import YoutubeLoader
 
 # Web search engines
@@ -56,8 +57,11 @@ from open_webui.apps.webui.models.files import Files
 from open_webui.config import (
     BRAVE_SEARCH_API_KEY,
     MOJEEK_SEARCH_API_KEY,
-    TIKTOKEN_ENCODING_NAME,
+    RAG_MAX_IMAGE_SIZE,
     RAG_TEXT_SPLITTER,
+    RAG_TOP_K,
+    RAG_RELEVANCE_THRESHOLD,
+    TIKTOKEN_ENCODING_NAME,
     CHUNK_OVERLAP,
     CHUNK_SIZE,
     CONTENT_EXTRACTION_ENGINE,
@@ -81,13 +85,11 @@ from open_webui.config import (
     RAG_OPENAI_API_KEY,
     RAG_OLLAMA_BASE_URL,
     RAG_OLLAMA_API_KEY,
-    RAG_RELEVANCE_THRESHOLD,
     RAG_RERANKING_MODEL,
     RAG_RERANKING_MODEL_AUTO_UPDATE,
     RAG_RERANKING_MODEL_TRUST_REMOTE_CODE,
     DEFAULT_RAG_TEMPLATE,
     RAG_TEMPLATE,
-    RAG_TOP_K,
     RAG_WEB_SEARCH_CONCURRENT_REQUESTS,
     RAG_WEB_SEARCH_DOMAIN_FILTER_LIST,
     RAG_WEB_SEARCH_ENGINE,
@@ -152,9 +154,8 @@ app.state.config.ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION = (
 app.state.config.CONTENT_EXTRACTION_ENGINE = CONTENT_EXTRACTION_ENGINE
 app.state.config.TIKA_SERVER_URL = TIKA_SERVER_URL
 
-app.state.config.TEXT_SPLITTER = RAG_TEXT_SPLITTER
 app.state.config.TIKTOKEN_ENCODING_NAME = TIKTOKEN_ENCODING_NAME
-
+app.state.config.TEXT_SPLITTER = RAG_TEXT_SPLITTER
 app.state.config.CHUNK_SIZE = CHUNK_SIZE
 app.state.config.CHUNK_OVERLAP = CHUNK_OVERLAP
 
@@ -171,6 +172,7 @@ app.state.config.OLLAMA_BASE_URL = RAG_OLLAMA_BASE_URL
 app.state.config.OLLAMA_API_KEY = RAG_OLLAMA_API_KEY
 
 app.state.config.PDF_EXTRACT_IMAGES = PDF_EXTRACT_IMAGES
+app.state.config.RAG_MAX_IMAGE_SIZE = RAG_MAX_IMAGE_SIZE  
 
 app.state.config.YOUTUBE_LOADER_LANGUAGE = YOUTUBE_LOADER_LANGUAGE
 app.state.config.YOUTUBE_LOADER_PROXY_URL = YOUTUBE_LOADER_PROXY_URL
@@ -871,7 +873,7 @@ def save_docs_to_vector_db(
             collection_name=collection_name,
             items=items,
         )
-        log.info(f"=====Vector Client=====\n{VECTOR_DB_CLIENT.get(collection_name)}")
+        # log.info(f"=====Vector Client=====\n{VECTOR_DB_CLIENT.get(collection_name)}")
         # log.info(f"=====Vector Search=====\n{VECTOR_DB_CLIENT.search(collection_name, text = 'ceshi', limit=2)}")
 
         return True
@@ -956,13 +958,26 @@ def process_file(
             file_path = file.path
             if file_path:
                 file_path = Storage.get_file(file_path)
-                loader = Loader(
-                    engine=app.state.config.CONTENT_EXTRACTION_ENGINE,
-                    TIKA_SERVER_URL=app.state.config.TIKA_SERVER_URL,
-                    PDF_EXTRACT_IMAGES=app.state.config.PDF_EXTRACT_IMAGES,
-                )
+                content_type = file.meta.get("content_type", "")
+                log.info(f"PDF_EXTRACT_IMAGES config: {app.state.config.PDF_EXTRACT_IMAGES}")
+                log.info(f"Raw PDF_EXTRACT_IMAGES from env: {os.environ.get('PDF_EXTRACT_IMAGES')}")
+                log.info(f"Raw PDF_EXTRACT_IMAGES from config: {PDF_EXTRACT_IMAGES}")
+                log.info(f"Content type: {content_type}")
+                # if content_type == "application/pdf" and app.state.config.PDF_EXTRACT_IMAGES:
+                if content_type == "application/pdf":
+                    loader = PDFProcessor(
+                        pdf_extract_images=True,
+                        max_image_size=app.state.config.RAG_MAX_IMAGE_SIZE,
+                        progress_callback=lambda stage, current, total: log.info(f"Processing PDF: {stage} - {current}/{total}")
+                    )
+                else:
+                    loader = Loader(
+                        engine=app.state.config.CONTENT_EXTRACTION_ENGINE,
+                        TIKA_SERVER_URL=app.state.config.TIKA_SERVER_URL,
+                        PDF_EXTRACT_IMAGES=app.state.config.PDF_EXTRACT_IMAGES,
+                    )
                 docs = loader.load(
-                    file.filename, file.meta.get("content_type"), file_path
+                    file.filename, content_type, file_path
                 )
 
                 docs = [

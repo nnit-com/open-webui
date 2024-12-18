@@ -113,10 +113,7 @@ DEFAULT_CONFIG = {
                 "content": "Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
             },
             {
-                "title": [
-                    "Give me ideas",
-                    "for what to do with my kids' art",
-                ],
+                "title": ["Give me ideas", "for what to do with my kids' art"],
                 "content": "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
             },
             {
@@ -124,10 +121,7 @@ DEFAULT_CONFIG = {
                 "content": "Tell me a random fun fact about the Roman Empire",
             },
             {
-                "title": [
-                    "Show me a code snippet",
-                    "of a website's sticky header",
-                ],
+                "title": ["Show me a code snippet", "of a website's sticky header"],
                 "content": "Show me a code snippet of a website's sticky header in CSS and JavaScript.",
             },
             {
@@ -1171,6 +1165,12 @@ RAG_FILE_MAX_SIZE = PersistentConfig(
     ),
 )
 
+RAG_MAX_IMAGE_SIZE = PersistentConfig(
+    "RAG_MAX_IMAGE_SIZE",
+    "rag.max_image_size",
+    int(os.environ.get("RAG_MAX_IMAGE_SIZE", "10485760")),  # Default to 10MB
+)
+
 ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION = PersistentConfig(
     "ENABLE_RAG_WEB_LOADER_SSL_VERIFICATION",
     "rag.enable_web_loader_ssl_verification",
@@ -1186,7 +1186,7 @@ RAG_EMBEDDING_ENGINE = PersistentConfig(
 PDF_EXTRACT_IMAGES = PersistentConfig(
     "PDF_EXTRACT_IMAGES",
     "rag.pdf_extract_images",
-    os.environ.get("PDF_EXTRACT_IMAGES", "False").lower() == "true",
+    os.environ.get("PDF_EXTRACT_IMAGES", "True").lower() == "true",
 )
 
 RAG_EMBEDDING_MODEL = PersistentConfig(

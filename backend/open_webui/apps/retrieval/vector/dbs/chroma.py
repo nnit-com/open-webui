@@ -77,7 +77,7 @@ class ChromaClient:
                     query_embeddings=vectors,
                     n_results=limit,
                 )
-                print(f"=====chroma/search/result: \n{result}=====")
+                # print(f"=====chroma/search/result: \n{result}=====")
 
                 return SearchResult(
                     **{
@@ -92,38 +92,6 @@ class ChromaClient:
             return str(e)
             # return None
 
-
-    # def search(
-    #     self, collection_name: str, text: Any, limit: int
-    # ) -> Optional[SearchResult]:
-    #     # Search for the nearest neighbor items based on the vectors and return 'limit' number of results.
-    #     try:
-    #         collection = self.client.get_collection(name=collection_name)
-    #         log.info(f"=====chroma/search/collection: \n{collection}=====")
-
-    #         if collection:
-    #             result = collection.query(
-    #                 query_texts=Document(page_content=text, metadata={}),
-    #                 n_results=limit,
-    #             )
-    #         # if collection:
-    #         #     result = collection.get()
-    #             log.info(f"=====chroma/search/collection: \n{collection}=====")
-    #             log.info(f"=====chroma/search/result: \n{result}=====")
-
-    #             return SearchResult(
-    #                 **{
-    #                     "ids": result["ids"],
-    #                     "distances": result["distances"],
-    #                     "documents": result["documents"],
-    #                     "metadatas": result["metadatas"],
-    #                 }
-    #             )
-    #         log.info(f"=====chroma/search/result: None Result=====")
-    #         return None
-    #     except Exception as e:
-    #         return str(e)
-    #         # return None
 
     def query(
         self, collection_name: str, filter: dict, limit: Optional[int] = None

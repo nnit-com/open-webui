@@ -17,8 +17,14 @@ from langchain_community.document_loaders import (
     UnstructuredXMLLoader,
     YoutubeLoader,
 )
+from langchain_community.document_loaders.pdf import BasePDFLoader
 from langchain_core.documents import Document
 from open_webui.env import SRC_LOG_LEVELS
+from open_webui.config import (
+    OPENAI_API_BASE_URL,
+    OPENAI_API_KEY,
+    RAG_EMBEDDING_MODEL,
+)
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["RAG"])
@@ -150,6 +156,10 @@ class Loader:
                 loader = PyPDFLoader(
                     file_path, extract_images=self.kwargs.get("PDF_EXTRACT_IMAGES")
                 )
+            # if file_ext == "pdf":
+            #     loader = ZeroxPDFLoader(
+            #         file_path, extract_images=self.kwargs.get("PDF_EXTRACT_IMAGES")
+            #     )
             elif file_ext == "csv":
                 loader = CSVLoader(file_path)
             elif file_ext == "rst":
