@@ -19,7 +19,7 @@
 	import { getBanners } from '$lib/apis/configs';
 	import { getUserSettings } from '$lib/apis/users';
 
-	import { WEBUI_VERSION , WEBUI_BASE_URL} from '$lib/constants';
+	import { WEBUI_VERSION } from '$lib/constants';
 	import { compareVersion } from '$lib/utils';
 
 	import {
@@ -236,7 +236,6 @@
 		class=" text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 h-screen max-h-[100dvh] overflow-auto flex flex-row"
 	>
 		{#if loaded}
-		
 			{#if !['user', 'admin'].includes($user.role)}
 				<AccountPending />
 			{:else if localDBChats.length > 0}

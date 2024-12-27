@@ -12,9 +12,6 @@
 			prompts: false,
 			tools: false
 		},
-	    // GPTs:{
-		// 	models:false
-		// },
 		chat: {
 			delete: true,
 			edit: true,

@@ -1,4 +1,4 @@
-import { WEBUI_API_BASE_URL,WEBUI_BASE_URL } from '$lib/constants';
+import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 export const getModels = async (token: string = '') => {
 	let error = null;
@@ -16,7 +16,6 @@ export const getModels = async (token: string = '') => {
 			return res.json();
 		})
 		.then((json) => {
-
 			return json;
 		})
 		.catch((err) => {
@@ -29,42 +28,8 @@ export const getModels = async (token: string = '') => {
 		throw error;
 	}
 
-	console.log("res",res)
 	return res;
 };
-
-// export const getGPTsModels = async (token: string = '') => {
-// 	let error = null;
-
-// 	const res = await fetch(`${WEBUI_BASE_URL}/api/gpts`, {
-// 		method: 'GET',
-// 		headers: {
-// 			Accept: 'application/json',
-// 			'Content-Type': 'application/json',
-// 			authorization: `Bearer ${token}`
-// 		}
-// 	})
-// 		.then(async (res) => {
-// 			if (!res.ok) throw await res.json();
-// 			return res.json();
-// 		})
-// 		.then((json) => {
-
-// 			return json;
-// 		})
-// 		.catch((err) => {
-// 			error = err;
-// 			console.log(err);
-// 			return null;
-// 		});
-
-// 	if (error) {
-// 		throw error;
-// 	}
-
-// 	console.log("res",res)
-// 	return res;
-// };
 
 export const getBaseModels = async (token: string = '') => {
 	let error = null;
@@ -160,40 +125,7 @@ export const getModelById = async (token: string, id: string) => {
 
 	return res;
 };
-export const showModelInSidebarById = async (token: string, id: string) => {
-	let error = null;
 
-	const searchParams = new URLSearchParams();
-	searchParams.append('id', id);
-
-	const res = await fetch(`${WEBUI_API_BASE_URL}/models/id/${id}/showInsidebar`, {
-		method: 'POST',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			authorization: `Bearer ${token}`
-		}
-	})
-		.then(async (res) => {
-			if (!res.ok) throw await res.json();
-			return res.json();
-		})
-		.then((json) => {
-			return json;
-		})
-		.catch((err) => {
-			error = err;
-
-			console.log(err);
-			return null;
-		});
-
-	if (error) {
-		throw error;
-	}
-
-	return res;
-};
 export const toggleModelById = async (token: string, id: string) => {
 	let error = null;
 
