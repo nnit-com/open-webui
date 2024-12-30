@@ -2,6 +2,7 @@ import logging
 import os
 import uuid
 from pathlib import Path
+from urllib.parse import quote # RFC 5987，处理Unicode字符
 from typing import Optional
 from pydantic import BaseModel
 import mimetypes
@@ -211,7 +212,8 @@ async def update_file_data_content_by_id(
 @router.get("/{id}/content")
 async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
     file = Files.get_file_by_id(id)
-    if file and (file.user_id == user.id or user.role == "admin"):
+    # if file and (file.user_id == user.id or user.role == "admin"):
+    if file:
         try:
             file_path = Storage.get_file(file.path)
             file_path = Path(file_path)
@@ -219,9 +221,15 @@ async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
             # Check if the file already exists in the cache
             if file_path.is_file():
                 print(f"file_path: {file_path}")
+                filename = file.meta.get("name", file.filename)
+                encoded_filename = quote(filename)
                 headers = {
-                    "Content-Disposition": f'attachment; filename="{file.meta.get("name", file.filename)}"'
+                    "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}" # RFC 5987
                 }
+
+                # headers = {
+                #     "Content-Disposition": f'attachment; filename="{file.meta.get("name", file.filename)}"'
+                # }
                 return FileResponse(file_path, headers=headers)
             else:
                 raise HTTPException(
@@ -245,7 +253,8 @@ async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
 @router.get("/{id}/content/html")
 async def get_html_file_content_by_id(id: str, user=Depends(get_verified_user)):
     file = Files.get_file_by_id(id)
-    if file and (file.user_id == user.id or user.role == "admin"):
+    # if file and (file.user_id == user.id or user.role == "admin"):
+    if file:
         try:
             file_path = Storage.get_file(file.path)
             file_path = Path(file_path)
@@ -270,6 +279,7 @@ async def get_html_file_content_by_id(id: str, user=Depends(get_verified_user)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=ERROR_MESSAGES.NOT_FOUND,
+            # detail="ERROR_MESSAGES.NOT_FOUND",
         )
 
 
@@ -278,6 +288,7 @@ async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
     file = Files.get_file_by_id(id)
 
     if file and (file.user_id == user.id or user.role == "admin"):
+    # if file:
         file_path = file.path
         if file_path:
             file_path = Storage.get_file(file_path)
@@ -286,14 +297,22 @@ async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
             # Check if the file already exists in the cache
             if file_path.is_file():
                 print(f"file_path: {file_path}")
+
+                filename = file.meta.get("name", file.filename)
+                encoded_filename = quote(filename)
                 headers = {
-                    "Content-Disposition": f'attachment; filename="{file.meta.get("name", file.filename)}"'
+                    "Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}" # RFC 5987
                 }
+
+                # headers = {
+                #     "Content-Disposition": f'attachment; filename="{file.meta.get("name", file.filename)}"'
+                # }
                 return FileResponse(file_path, headers=headers)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=ERROR_MESSAGES.NOT_FOUND,
+                    detail="ERROR_MESSAGES.NOT_FOUND",
+                    # detail=ERROR_MESSAGES.NOT_FOUND,
                 )
         else:
             # File path doesn’t exist, return the content as .txt if possible
