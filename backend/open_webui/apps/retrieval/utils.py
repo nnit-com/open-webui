@@ -72,7 +72,7 @@ def query_doc(
         )
         # log.info(f"=====utile/query_doc/result:===== \n{result}")
 
-        log.info(f"query_doc:result {result.ids} {result.metadatas}")
+        log.info(f"query_doc:hybrid_result {result.ids} {result.metadatas}")
         return result
     except Exception as e:
         print(e)
