@@ -24,6 +24,8 @@ static/images/*
 # Distribution / packaging
 .Python
 build/
+build-jnud/
+build.bak
 develop-eggs/
 dist/
 downloads/
