@@ -21,6 +21,7 @@ static/pyodide/*
 !static/pyodide/pyodide-lock.json
 static/images/*
 
+
 # Distribution / packaging
 .Python
 build/
